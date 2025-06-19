@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Global Mastering</title>
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #000, #111);
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0f0f0f;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #00ffcc;
+    }
+    header h1 {
+      margin: 0;
+      color: #00ffcc;
+    }
+    header img {
+      max-width: 120px;
+      margin-bottom: 10px;
+    }
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .notice {
+      background-color: #111;
+      border: 1px solid #00ffcc;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 0 auto 40px auto;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .notice strong {
+      color: #00ffcc;
+    }
+    .custom-file-input {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      border-radius: 6px;
+    }
+    .custom-file-input input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+      height: 100%;
+      width: 100%;
+    }
+    .custom-file-label {
+      display: inline-block;
+      background-color: #000;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .custom-file-label:hover {
+      background-color: #00ffcc;
+      color: black;
+    }
+    button {
+      background-color: #000;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      border-radius: 6px;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00ffcc;
+      color: black;
+    }
+    .player-section {
+      margin-top: 30px;
+    }
+    audio {
+      margin: 10px auto;
+      display: block;
+      width: 90%;
+      max-width: 600px;
+    }
+    footer {
+      background-color: #0a0a0a;
+      padding: 30px;
+      color: #aaa;
+      text-align: center;
+      font-size: 14px;
+      border-top: 1px solid #00ffcc;
+    }
+    #waveform {
+      margin: 30px auto;
+      max-width: 800px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+  <h1>🎧 Global Mastering Demo</h1>
+  </header>
+  <div class="container">
+    <!-- Info Section Start -->
+    <div class="notice">
+      <p><strong>System is under development.</strong> The full version (PRO) will be released soon.</p>
+      <p>Current version: <strong>DEMO v0.5</strong></p>
+      <p>Each month, a limited number of <strong>free MP3 mastering</strong> services will be available.</p>
+    </div>
+    <!-- Info Section End -->
+
+    <div class="custom-file-input">
+      <label class="custom-file-label">Select File
+        <input type="file" id="fileInput" accept="audio/*">
+      </label>
+    </div>
+
+    <div id="waveform"></div>
+    <h3 id="trackTitle" style="margin-top: 30px;"></h3>
+<div id="controls" style="display:none" class="player-section">
+      <h2>🔊 Listen & Download</h2>
+      <div id="players"></div>
+    </div>
+  </div>
+  <footer>
+    by HAAQAN | Handmade with Python & FFmpeg · AI Audio Mastering
+  </footer>
+  <script>
+  const fileInput = document.getElementById('fileInput');
+  const controls = document.getElementById('controls');
+  const players = document.getElementById('players');
+  const trackTitle = document.getElementById('trackTitle');
+  let wavesurfer;
+
+  fileInput.addEventListener('change', async function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    // Başlığı göster
+    trackTitle.textContent = `🎵 ${file.name} - Global Mastered`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Dalga formunu yükle
+    const reader = new FileReader();
+    reader.onload = function () {
+      if (wavesurfer) wavesurfer.destroy();
+      wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: '#00ffcc',
+        progressColor: '#fff',
+        backgroundColor: '#000',
+        cursorColor: '#00ffcc',
+        height: 100,
+        responsive: true
+      });
+      wavesurfer.loadBlob(file);
+    };
+    reader.readAsArrayBuffer(file);
+
+    // Upload and get mastered tracks
+    const res = await fetch('/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    controls.style.display = 'block';
+    players.innerHTML = `
+      <h3>Soft</h3>
+      <audio controls src="${data.soft}"></audio>
+      <a href="${data.soft}" download><button>Download Soft</button></a>
+      <h3>Normal</h3>
+      <audio controls src="${data.normal}"></audio>
+      <a href="${data.normal}" download><button>Download Normal</button></a>
+      <h3>Fast</h3>
+      <audio controls src="${data.fast}"></audio>
+      <a href="${data.fast}" download><button>Download Fast</button></a>
+    `;
+  });
+</script>
+</body>
+</html>

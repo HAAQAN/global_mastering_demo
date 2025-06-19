@@ -1,0 +1,5 @@
+PRESETS = {
+    "soft": "presets/soft.ffpreset",
+    "normal": "presets/normal.ffpreset",
+    "fast": "presets/fast.ffpreset"
+}
